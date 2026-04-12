@@ -13,6 +13,8 @@ import {
   CardTitle,
 } from "./components/ui/card.tsx";
 import { Separator } from "./components/ui/separator.tsx";
+import { Toggle } from "./components/ui/toggle.tsx";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs.tsx";
 import { defineRealmorphismButton } from "./index.ts";
 
 defineRealmorphismButton();
@@ -67,16 +69,17 @@ function App() {
               shadcn/ui enabled
             </Badge>
 
-            <Button
+            <Toggle
               variant="outline"
               size="sm"
               className="gap-2"
-              onClick={() => setTheme(isDark ? "light" : "dark")}
+              pressed={isDark}
+              onPressedChange={(nextPressed) => setTheme(nextPressed ? "dark" : "light")}
               aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
             >
               {isDark ? <SunMedium className="size-4" /> : <MoonStar className="size-4" />}
               {isDark ? "Light mode" : "Dark mode"}
-            </Button>
+            </Toggle>
           </div>
 
           <div className="max-w-3xl space-y-4">
@@ -127,13 +130,60 @@ function App() {
 
               <Separator />
 
+              <Tabs
+                defaultValue="surface"
+                className="grid gap-4 lg:grid-cols-[12rem_minmax(0,1fr)] lg:items-start"
+              >
+                <TabsList variant="responsiveRail" className="w-full">
+                  <TabsTrigger value="surface" variant="responsiveRail">
+                    Surface
+                  </TabsTrigger>
+                  <TabsTrigger value="motion" variant="responsiveRail">
+                    Motion
+                  </TabsTrigger>
+                  <TabsTrigger value="state" variant="responsiveRail">
+                    State
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="surface" className="lg:col-start-2">
+                  <div className="info-pane space-y-2 rounded-lg border border-border/70 bg-background/60 p-4">
+                    <div className="text-sm font-medium">Surface language</div>
+                    <p className="text-sm leading-6 text-muted-foreground">
+                      Tabs sit on a shared rail, the active choice sinks, and the neighbors stay
+                      close enough to feel coupled.
+                    </p>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="motion" className="lg:col-start-2">
+                  <div className="info-pane space-y-2 rounded-lg border border-border/70 bg-background/60 p-4">
+                    <div className="text-sm font-medium">Mechanical motion</div>
+                    <p className="text-sm leading-6 text-muted-foreground">
+                      The selected tab lifts and settles like a physical switch, so the surface
+                      reads like a panel instead of a menu.
+                    </p>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="state" className="lg:col-start-2">
+                  <div className="info-pane space-y-2 rounded-lg border border-border/70 bg-background/60 p-4">
+                    <div className="text-sm font-medium">State handling</div>
+                    <p className="text-sm leading-6 text-muted-foreground">
+                      Use tabs for one-of-many selection when the user should feel the active state
+                      physically lock into place.
+                    </p>
+                  </div>
+                </TabsContent>
+              </Tabs>
+
               <div className="flex flex-wrap gap-3">
                 <Button>
                   Try the demo
                   <ArrowRight className="size-4" />
                 </Button>
                 <Button variant="outline">Explore components</Button>
-                <Button variant="secondary">Read the source</Button>
+                <Toggle variant="secondary">Read the source</Toggle>
               </div>
             </CardContent>
 
