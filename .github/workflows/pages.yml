@@ -30,13 +30,13 @@ jobs:
           node-version: 22
 
       - name: Enable pnpm
-        run: corepack prepare pnpm@10.33.0 --activate
+        run: corepack enable
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: corepack pnpm install --frozen-lockfile
 
       - name: Build demo
-        run: pnpm run build:demo
+        run: corepack pnpm run build:demo
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
