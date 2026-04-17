@@ -12,15 +12,20 @@ import {
   CardHeader,
   CardTitle,
 } from "./components/ui/card.tsx";
+import { Knob } from "./components/ui/knob.tsx";
 import { Separator } from "./components/ui/separator.tsx";
 import { Toggle } from "./components/ui/toggle.tsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs.tsx";
-import { defineRealmorphismButton } from "./index.ts";
-
-defineRealmorphismButton();
 
 const THEME_STORAGE_KEY = "realmorphism-theme";
+const VOICE_TUNER_STORAGE_KEY = "realmorphism-voice-tuner";
 type Theme = "light" | "dark";
+
+type VoiceTunerState = {
+  rate: number;
+  pitch: number;
+  volume: number;
+};
 
 function getInitialTheme(): Theme {
   if (typeof window === "undefined") {
@@ -35,18 +40,35 @@ function getInitialTheme(): Theme {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
-type RealmorphismButtonProps = {
-  label?: string;
-  active?: boolean;
-  angle?: string | number;
-};
+function getInitialVoiceTuner(): VoiceTunerState {
+  if (typeof window === "undefined") {
+    return { rate: -5, pitch: -2, volume: 0 };
+  }
 
-function RealmorphismButton(props: RealmorphismButtonProps) {
-  return React.createElement("realmorphism-button", props);
+  try {
+    const stored = window.localStorage.getItem(VOICE_TUNER_STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored) as Partial<VoiceTunerState>;
+      return {
+        rate: typeof parsed.rate === "number" ? parsed.rate : -5,
+        pitch: typeof parsed.pitch === "number" ? parsed.pitch : -2,
+        volume: typeof parsed.volume === "number" ? parsed.volume : 0,
+      };
+    }
+  } catch {
+    // ignore broken saved state
+  }
+
+  return { rate: -5, pitch: -2, volume: 0 };
 }
 
 function App() {
   const [theme, setTheme] = React.useState<Theme>(getInitialTheme);
+  const [power, setPower] = React.useState(42);
+  const [tone, setTone] = React.useState(24);
+  const [balance, setBalance] = React.useState(0);
+  const [trim, setTrim] = React.useState(7);
+  const [voiceTuner, setVoiceTuner] = React.useState<VoiceTunerState>(getInitialVoiceTuner);
   const isDark = theme === "dark";
 
   React.useEffect(() => {
@@ -54,6 +76,10 @@ function App() {
     document.documentElement.style.colorScheme = theme;
     window.localStorage.setItem(THEME_STORAGE_KEY, theme);
   }, [isDark, theme]);
+
+  React.useEffect(() => {
+    window.localStorage.setItem(VOICE_TUNER_STORAGE_KEY, JSON.stringify(voiceTuner));
+  }, [voiceTuner]);
 
   const shellClassName = isDark
     ? "min-h-screen bg-[radial-gradient(circle_at_top,_rgba(64,64,64,0.28),_transparent_34%),linear-gradient(180deg,_#09090b_0%,_#111114_44%,_#0c0c0d_100%)] px-6 py-10 text-foreground"
@@ -94,7 +120,7 @@ function App() {
           </div>
         </header>
 
-        <section className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+        <section className="grid gap-6">
           <Card className="overflow-hidden border-border/70 bg-card/90 backdrop-blur">
             <CardHeader className="items-start">
               <div className="space-y-2">
@@ -196,25 +222,175 @@ function App() {
           <Card className="border-border/70 bg-card/90 backdrop-blur">
             <CardHeader className="items-start">
               <div className="space-y-2">
-                <CardTitle>realmorphism button</CardTitle>
+                <CardTitle>Knobs</CardTitle>
                 <CardDescription>
-                  The original custom element still works beside shadcn.
+                  Bounded rotary controls with wheel-first precision, drag fallback, and reset on
+                  double-click.
                 </CardDescription>
               </div>
             </CardHeader>
 
-            <CardContent className="space-y-5">
-              <div className="flex items-center justify-center rounded-xl border border-border/70 bg-background/60 p-6">
-                <RealmorphismButton label="Push me" angle="-7" active />
+            <CardContent className="space-y-6">
+              <div className="grid gap-4 lg:grid-cols-[minmax(0,16rem)_minmax(0,1fr)] lg:items-start">
+                <div className="info-pane rounded-lg border border-border/70 bg-background/60 p-4">
+                  <div className="text-sm font-medium">Rotary behavior</div>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    These knobs are for tuning, not spinning forever. Use the wheel for precise
+                    increments, drag when you want a quick sweep, and double-click to snap back to
+                    the default resting point.
+                  </p>
+                </div>
+
+                <div className="grid gap-8 sm:grid-cols-2 xl:grid-cols-4">
+                  <Knob
+                    label="Power"
+                    value={power}
+                    onValueChange={setPower}
+                    min={0}
+                    max={100}
+                    step={1}
+                    mode="power"
+                    theme={theme}
+                  />
+                  <Knob
+                    label="Tone"
+                    value={tone}
+                    onValueChange={setTone}
+                    min={0}
+                    max={100}
+                    step={1}
+                    mode="power"
+                    theme={theme}
+                  />
+                  <Knob
+                    label="Balance"
+                    value={balance}
+                    onValueChange={setBalance}
+                    min={-12}
+                    max={12}
+                    step={1}
+                    wheelMultiplier={0.5}
+                    dragMultiplier={0.75}
+                    mode="balance"
+                    theme={theme}
+                  />
+                  <Knob
+                    label="Trim"
+                    value={trim}
+                    onValueChange={setTrim}
+                    min={0}
+                    max={10}
+                    step={0.1}
+                    mode="power"
+                    size="sm"
+                    theme={theme}
+                  />
+                </div>
+              </div>
+            </CardContent>
+
+            <CardFooter className="justify-between border-t border-border/70 pt-6 text-sm text-muted-foreground">
+              <span>Wheel-first tuning surface</span>
+              <span>Drag remains a fallback</span>
+            </CardFooter>
+          </Card>
+
+          <Card className="border-border/70 bg-card/90 backdrop-blur">
+            <CardHeader className="items-start">
+              <div className="space-y-2">
+                <CardTitle>Voice tuner</CardTitle>
+                <CardDescription>
+                  Tune the speaking voice with a small set of live controls that map directly to
+                  TTS rate, pitch, and volume.
+                </CardDescription>
               </div>
 
-              <div className="info-pane rounded-lg border border-border/70 bg-background/60 p-4">
-                <div className="text-sm font-medium">What changed</div>
-                <ul className="mt-2 space-y-2 text-sm leading-6 text-muted-foreground">
-                  <li>- shadcn config is in `components.json`.</li>
-                  <li>- Tailwind v4 tokens live in `src/styles.css`.</li>
-                  <li>- New UI primitives are under `src/components/ui/`.</li>
-                </ul>
+              <Badge variant="outline" className="rounded-full px-3 py-1">
+                Voice profile: Jenny Neural
+              </Badge>
+            </CardHeader>
+
+            <CardContent className="space-y-6">
+              <div className="grid gap-4 lg:grid-cols-[minmax(0,16rem)_minmax(0,1fr)] lg:items-start">
+                <div className="info-pane rounded-lg border border-border/70 bg-background/60 p-4">
+                  <div className="text-sm font-medium">Tuning notes</div>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    Rate pushes the voice faster or slower, pitch nudges it up or down, and
+                    volume trims how loud it feels. The values are intentionally bounded so the
+                    voice stays usable.
+                  </p>
+                </div>
+
+                <div className="grid gap-8 sm:grid-cols-2 xl:grid-cols-3">
+                  <Knob
+                    label="Rate"
+                    unit="%"
+                    value={voiceTuner.rate}
+                    onValueChange={(rate) => setVoiceTuner((current) => ({ ...current, rate }))}
+                    min={-20}
+                    max={20}
+                    step={1}
+                    wheelMultiplier={0.5}
+                    dragMultiplier={0.5}
+                    mode="tuner"
+                    theme={theme}
+                  />
+                  <Knob
+                    label="Pitch"
+                    unit="Hz"
+                    value={voiceTuner.pitch}
+                    onValueChange={(pitch) => setVoiceTuner((current) => ({ ...current, pitch }))}
+                    min={-12}
+                    max={12}
+                    step={1}
+                    wheelMultiplier={0.5}
+                    dragMultiplier={0.5}
+                    mode="tuner"
+                    theme={theme}
+                  />
+                  <Knob
+                    label="Volume"
+                    unit="%"
+                    value={voiceTuner.volume}
+                    onValueChange={(volume) => setVoiceTuner((current) => ({ ...current, volume }))}
+                    min={-10}
+                    max={10}
+                    step={1}
+                    wheelMultiplier={0.5}
+                    dragMultiplier={0.5}
+                    mode="tuner"
+                    theme={theme}
+                  />
+                </div>
+              </div>
+
+              <div className="rounded-lg border border-border/70 bg-background/60 p-4">
+                <div className="flex flex-wrap items-center gap-3 text-sm">
+                  <Badge variant="secondary" className="rounded-full px-3 py-1">
+                    rate {voiceTuner.rate > 0 ? `+${voiceTuner.rate}` : voiceTuner.rate}%
+                  </Badge>
+                  <Badge variant="secondary" className="rounded-full px-3 py-1">
+                    pitch {voiceTuner.pitch > 0 ? `+${voiceTuner.pitch}` : voiceTuner.pitch}Hz
+                  </Badge>
+                  <Badge variant="secondary" className="rounded-full px-3 py-1">
+                    volume {voiceTuner.volume > 0 ? `+${voiceTuner.volume}` : voiceTuner.volume}%
+                  </Badge>
+                </div>
+                <div className="mt-3 text-sm leading-6 text-muted-foreground">
+                  This would be the exact payload you send to TTS:
+                  <pre className="mt-2 overflow-x-auto rounded-md border border-border/70 bg-background/80 p-3 text-xs text-foreground">
+                    {JSON.stringify(
+                      {
+                        profile: "jenny-neural",
+                        rate: `${voiceTuner.rate > 0 ? "+" : ""}${voiceTuner.rate}%`,
+                        pitch: `${voiceTuner.pitch > 0 ? "+" : ""}${voiceTuner.pitch}Hz`,
+                        volume: `${voiceTuner.volume > 0 ? "+" : ""}${voiceTuner.volume}%`,
+                      },
+                      null,
+                      2,
+                    )}
+                  </pre>
+                </div>
               </div>
             </CardContent>
           </Card>

@@ -4,6 +4,7 @@ import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vite-plus";
 
 export default defineConfig({
+  base: process.env.GITHUB_PAGES === "true" ? "/realmorphism/" : "/",
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {

@@ -26,6 +26,7 @@
   "scripts": {
     "build": "vp pack",
     "demo": "vite",
+    "build:demo": "vite build",
     "dev": "vp pack --watch",
     "test": "vp test",
     "check": "vp check",

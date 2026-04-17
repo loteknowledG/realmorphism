@@ -13,6 +13,7 @@ export {
   CardTitle,
 } from "./components/ui/card.tsx";
 
+export { Knob } from "./components/ui/knob.tsx";
 export { InfoPane } from "./components/ui/info-pane.tsx";
 export { Toggle, toggleVariants } from "./components/ui/toggle.tsx";
 export {
