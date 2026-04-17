@@ -24,19 +24,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
         with:
           node-version: 22
-
-      - name: Enable pnpm
-        run: corepack enable
+          cache: true
 
       - name: Install dependencies
-        run: corepack pnpm install --frozen-lockfile
+        run: vp install --frozen-lockfile
 
       - name: Build demo
-        run: corepack pnpm run build:demo
+        run: vp build
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
