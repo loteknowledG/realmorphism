@@ -38,7 +38,9 @@
   --shadow-lg: 2px 2px 0px 1px var(--foreground), 2px 4px 6px 0px var(--foreground);
   --shadow-xl: 2px 2px 0px 1px var(--foreground), 2px 8px 10px 0px var(--foreground);
   --shadow-2xl: 2px 2px 0px 1px var(--foreground);
-  --button-wall: var(--foreground);
+  /* Hard-offset color: :root = ink on paper; .dark = bright slab (see overrides). */
+  --surface-extrusion: var(--foreground);
+  --button-wall: var(--surface-extrusion);
   --font-sans: "IBM Plex Mono", "Ubuntu Mono", "Consolas", monospace;
   --font-serif: serif;
   --font-mono: "JetBrains Mono", monospace;
@@ -93,52 +95,66 @@
   --tracking-wide: calc(var(--tracking-normal) + 0.025em);
   --tracking-wider: calc(var(--tracking-normal) + 0.05em);
   --tracking-widest: calc(var(--tracking-normal) + 0.1em);
-  --shadow-2xs: 4px 4px 0px 0px hsl(0 0% 0% / 0.25);
-  --shadow-xs: 4px 4px 0px 0px hsl(0 0% 0% / 0.25);
-  --shadow-sm: 4px 4px 0px 0px hsl(0 0% 0% / 0.5), 4px 1px 2px -1px hsl(0 0% 0% / 0.5);
-  --shadow: 4px 4px 0px 0px hsl(0 0% 0% / 0.5), 4px 1px 2px -1px hsl(0 0% 0% / 0.5);
-  --shadow-md: 4px 4px 0px 0px hsl(0 0% 0% / 0.5), 4px 2px 4px -1px hsl(0 0% 0% / 0.5);
-  --shadow-lg: 4px 4px 0px 0px hsl(0 0% 0% / 0.5), 4px 4px 6px -1px hsl(0 0% 0% / 0.5);
-  --shadow-xl: 4px 4px 0px 0px hsl(0 0% 0% / 0.5), 4px 8px 10px -1px hsl(0 0% 0% / 0.5);
-  --shadow-2xl: 4px 4px 0px 0px hsl(0 0% 0% / 1.25);
-  --button-wall: var(--foreground);
+  --surface-extrusion: var(--foreground);
+  --shadow-2xs: 4px 4px 0px 0px var(--surface-extrusion);
+  --shadow-xs: 4px 4px 0px 0px var(--surface-extrusion);
+  --shadow-sm:
+    4px 4px 0px 0px var(--surface-extrusion),
+    4px 1px 2px -1px color-mix(in oklch, var(--surface-extrusion) 72%, transparent);
+  --shadow:
+    4px 4px 0px 0px var(--surface-extrusion),
+    4px 1px 2px -1px color-mix(in oklch, var(--surface-extrusion) 72%, transparent);
+  --shadow-md:
+    4px 4px 0px 0px var(--surface-extrusion),
+    4px 2px 4px -1px color-mix(in oklch, var(--surface-extrusion) 72%, transparent);
+  --shadow-lg:
+    4px 4px 0px 0px var(--surface-extrusion),
+    4px 4px 6px -1px color-mix(in oklch, var(--surface-extrusion) 72%, transparent);
+  --shadow-xl:
+    4px 4px 0px 0px var(--surface-extrusion),
+    4px 8px 10px -1px color-mix(in oklch, var(--surface-extrusion) 72%, transparent);
+  --shadow-2xl: 4px 4px 0px 0px var(--surface-extrusion);
+  --button-wall: var(--surface-extrusion);
   --info-pane-inset: hsl(0 0% 0% / 0.45);
 }
 
 .dark {
-  --background: oklch(0.1641 0.0064 285.6767);
-  --foreground: oklch(0.7713 0.0086 196.9785);
-  --card: oklch(0.1857 0.0082 285.5695);
-  --card-foreground: oklch(0.8491 0.0056 197.0509);
-  --popover: oklch(0.1531 0.0054 285.7444);
-  --popover-foreground: oklch(0.8104 0.0071 197.0168);
-  --primary: oklch(0.7193 0.0439 196.2166);
-  --primary-foreground: oklch(0.1483 0.0109 284.9903);
-  --secondary: oklch(0.255 0.022 300.0943);
-  --secondary-foreground: oklch(0.8874 0.0042 197.0816);
-  --muted: oklch(0.2272 0.0118 285.4252);
-  --muted-foreground: oklch(0.5388 0.0177 285.7895);
-  --accent: oklch(0.3045 0.0403 314.1719);
-  --accent-foreground: oklch(0.8114 0.0793 314.3502);
-  --destructive: oklch(0.389 0.1264 25.2711);
-  --destructive-foreground: oklch(0.9619 0 0);
-  --border: oklch(0.2633 0.0071 285.9047);
-  --input: oklch(0.2067 0.01 285.4885);
-  --ring: oklch(0.7193 0.0439 196.2166);
+  --theme-color-a: oklch(0.8 0.14 215);
+  --theme-color-b: oklch(0.72 0.14 318);
+  --theme-color-c: var(--theme-color-b);
+  --background: color-mix(in oklch, var(--theme-color-b) 16%, oklch(0.11 0.018 278));
+  --foreground: oklch(0.96 0.02 228);
+  --card: color-mix(in oklch, var(--theme-color-c) 20%, oklch(0.145 0.02 279));
+  --card-foreground: oklch(0.97 0.02 228);
+  --popover: color-mix(in oklch, var(--theme-color-a) 18%, oklch(0.125 0.019 279));
+  --popover-foreground: oklch(0.97 0.02 228);
+  --primary: color-mix(in oklch, var(--theme-color-a) 78%, white 22%);
+  --primary-foreground: oklch(0.17 0.03 279);
+  --secondary: color-mix(in oklch, var(--theme-color-b) 58%, oklch(0.185 0.02 279));
+  --secondary-foreground: oklch(0.97 0.02 228);
+  --muted: color-mix(in oklch, var(--theme-color-c) 22%, oklch(0.19 0.02 279));
+  --muted-foreground: oklch(0.85 0.03 232);
+  --accent: color-mix(in oklch, var(--theme-color-c) 62%, oklch(0.22 0.03 279));
+  --accent-foreground: oklch(0.97 0.02 228);
+  --destructive: oklch(0.56 0.2 24);
+  --destructive-foreground: oklch(0.98 0.01 225);
+  --border: color-mix(in oklch, var(--theme-color-a) 32%, oklch(0.5 0.03 280));
+  --input: oklch(0.24 0.03 280);
+  --ring: color-mix(in oklch, var(--theme-color-a) 84%, white 16%);
   --radius: 0rem;
-  --chart-1: oklch(0.6755 0.0759 195.5043);
-  --chart-2: oklch(0.5518 0.1268 313.5842);
-  --chart-3: oklch(0.5711 0.1189 341.1449);
-  --chart-4: oklch(0.6524 0.0752 83.8957);
-  --chart-5: oklch(0.5548 0.1006 20.8071);
-  --sidebar: oklch(0.1417 0.0044 285.8192);
-  --sidebar-foreground: oklch(0.6914 0.0117 196.8866);
-  --sidebar-primary: oklch(0.7193 0.0439 196.2166);
-  --sidebar-primary-foreground: oklch(0.1483 0.0109 284.9903);
-  --sidebar-accent: oklch(0.2272 0.0118 285.4252);
-  --sidebar-accent-foreground: oklch(0.9273 0.0055 197.0619);
-  --sidebar-border: oklch(0.2323 0.0058 285.9375);
-  --sidebar-ring: oklch(0.7193 0.0439 196.2166);
+  --chart-1: color-mix(in oklch, var(--theme-color-a) 70%, white 30%);
+  --chart-2: color-mix(in oklch, var(--theme-color-b) 64%, white 36%);
+  --chart-3: color-mix(in oklch, var(--theme-color-c) 60%, white 40%);
+  --chart-4: color-mix(in oklch, var(--theme-color-a) 42%, var(--theme-color-b) 58%);
+  --chart-5: color-mix(in oklch, var(--theme-color-c) 48%, var(--theme-color-a) 52%);
+  --sidebar: color-mix(in oklch, var(--theme-color-b) 14%, oklch(0.11 0.018 278));
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--muted);
+  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
   --font-sans: "IBM Plex Mono", "Ubuntu Mono", "Consolas", monospace;
   --font-serif: serif;
   --font-mono: "JetBrains Mono", monospace;
@@ -154,15 +170,37 @@
   --tracking-wide: calc(var(--tracking-normal) + 0.025em);
   --tracking-wider: calc(var(--tracking-normal) + 0.05em);
   --tracking-widest: calc(var(--tracking-normal) + 0.1em);
-  --shadow-2xs: 2px 2px 0px 1px hsl(0 0% 0% / 0.5);
-  --shadow-xs: 2px 2px 0px 1px hsl(0 0% 0% / 0.5);
-  --shadow-sm: 2px 2px 0px 1px hsl(0 0% 0% / 1), 2px 1px 2px 0px hsl(0 0% 0% / 1);
-  --shadow: 2px 2px 0px 1px hsl(0 0% 0% / 1), 2px 1px 2px 0px hsl(0 0% 0% / 1);
-  --shadow-md: 2px 2px 0px 1px hsl(0 0% 0% / 1), 2px 2px 4px 0px hsl(0 0% 0% / 1);
-  --shadow-lg: 2px 2px 0px 1px hsl(0 0% 0% / 1), 2px 4px 6px 0px hsl(0 0% 0% / 1);
-  --shadow-xl: 2px 2px 0px 1px hsl(0 0% 0% / 1), 2px 8px 10px 0px hsl(0 0% 0% / 1);
-  --shadow-2xl: 2px 2px 0px 1px hsl(0 0% 0% / 2.5);
-  --info-pane-inset: hsl(0 0% 100% / 0.55);
+  --surface-extrusion: color-mix(in oklch, var(--theme-color-a) 62%, white 38%);
+  --shadow-2xs: 2px 2px 0px 1px hsl(205 95% 70% / 0.28);
+  --shadow-xs: 2px 2px 0px 1px hsl(205 95% 70% / 0.28);
+  --shadow-sm: 2px 2px 0px 1px hsl(205 95% 70% / 0.35), 2px 1px 2px 0px hsl(278 84% 72% / 0.35);
+  --shadow: 2px 2px 0px 1px hsl(205 95% 70% / 0.35), 2px 1px 2px 0px hsl(278 84% 72% / 0.35);
+  --shadow-md: 2px 2px 0px 1px hsl(205 95% 70% / 0.4), 2px 2px 4px 0px hsl(278 84% 72% / 0.38);
+  --shadow-lg: 2px 2px 0px 1px hsl(205 95% 70% / 0.42), 2px 4px 6px 0px hsl(278 84% 72% / 0.4);
+  --shadow-xl: 2px 2px 0px 1px hsl(205 95% 70% / 0.45), 2px 8px 10px 0px hsl(278 84% 72% / 0.45);
+  --shadow-2xl: 2px 2px 0px 1px hsl(278 84% 72% / 0.5);
+  --button-wall: color-mix(in oklch, var(--theme-color-a) 76%, white 24%);
+  --info-pane-inset: color-mix(in oklch, var(--theme-color-c) 42%, white 58%);
+}
+
+@layer base {
+  .dark .text-muted-foreground {
+    color: color-mix(in oklch, var(--foreground) 82%, var(--muted-foreground));
+  }
+
+  .dark .border-border\/70 {
+    border-color: color-mix(in oklch, var(--border) 88%, var(--foreground) 12%);
+  }
+
+  .dark .border-border\/60 {
+    border-color: color-mix(in oklch, var(--border) 82%, var(--foreground) 18%);
+  }
+
+  .dark .text-foreground\/85,
+  .dark .text-foreground\/88,
+  .dark .text-foreground\/90 {
+    color: color-mix(in oklch, var(--foreground) 92%, white 8%);
+  }
 }
 
 @layer base {

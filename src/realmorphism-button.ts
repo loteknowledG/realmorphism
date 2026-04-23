@@ -13,6 +13,9 @@ const buttonStyles = String.raw`
     display: inline-block;
     --realmorphism-base-x: 2px;
     --realmorphism-base-y: 4px;
+    /* Press travel: deeper + biased left (read as “into the panel”). */
+    --realmorphism-press-y: 8px;
+    --realmorphism-press-x: -7px;
     --realmorphism-wall: var(--button-wall);
     --realmorphism-front: var(--primary);
     --realmorphism-text: var(--primary-foreground);
@@ -47,6 +50,7 @@ const buttonStyles = String.raw`
   .shadow {
     transform: translateY(var(--realmorphism-base-y)) translateX(var(--realmorphism-base-x));
     background: var(--realmorphism-wall);
+    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .front {
@@ -59,7 +63,7 @@ const buttonStyles = String.raw`
     font-weight: 700;
     letter-spacing: -0.01em;
     will-change: transform;
-    transition: transform 180ms cubic-bezier(0.3, 0.7, 0.4, 1);
+    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
     box-shadow: none;
   }
 
@@ -72,12 +76,13 @@ const buttonStyles = String.raw`
     transform: translateY(-4px) translateX(-2px);
   }
 
-  :host(:active) .front {
-    transform: translateY(4px) translateX(4px);
+  :host(:active) .front,
+  :host([data-pressed]) .front {
+    transform: translateY(var(--realmorphism-press-y)) translateX(var(--realmorphism-press-x));
   }
 
   :host([active]) .front {
-    transform: translateY(4px) translateX(4px);
+    transform: translateY(var(--realmorphism-press-y)) translateX(var(--realmorphism-press-x));
     box-shadow: none;
   }
 
@@ -86,8 +91,10 @@ const buttonStyles = String.raw`
   }
 
   :host(:active) .shadow,
+  :host([data-pressed]) .shadow,
   :host([active]) .shadow {
-    transform: translateY(calc(var(--realmorphism-base-y) + 4px)) translateX(calc(var(--realmorphism-base-x) + 2px));
+    transform: translateY(calc(var(--realmorphism-base-y) + 9px))
+      translateX(calc(var(--realmorphism-base-x) + var(--realmorphism-press-x)));
   }
 
   :host([active]) .text {
@@ -116,6 +123,66 @@ export class RealmorphismButtonElement extends RealmorphismHTMLElementBase {
   static observedAttributes = ["label", "active", "angle"];
 
   #button: HTMLButtonElement | null = null;
+  #pressRaf = 0;
+  #releaseRaf = 0;
+
+  #schedulePress() {
+    if (this.#pressRaf !== 0) {
+      cancelAnimationFrame(this.#pressRaf);
+    }
+    this.#pressRaf = requestAnimationFrame(() => {
+      this.#pressRaf = 0;
+      this.setAttribute("data-pressed", "");
+    });
+  }
+
+  #scheduleRelease() {
+    if (this.#releaseRaf !== 0) {
+      cancelAnimationFrame(this.#releaseRaf);
+    }
+    this.#releaseRaf = requestAnimationFrame(() => {
+      this.#releaseRaf = 0;
+      this.removeAttribute("data-pressed");
+    });
+  }
+
+  #onPointerDown = (event: PointerEvent) => {
+    if (event.button !== 0) {
+      return;
+    }
+    try {
+      this.#button?.setPointerCapture(event.pointerId);
+    } catch {
+      /* ignore */
+    }
+    this.#schedulePress();
+  };
+
+  #onPointerUp = (event: PointerEvent) => {
+    if (event.button !== 0) {
+      return;
+    }
+    try {
+      if (this.#button?.hasPointerCapture(event.pointerId)) {
+        this.#button.releasePointerCapture(event.pointerId);
+      }
+    } catch {
+      /* ignore */
+    }
+    this.#scheduleRelease();
+  };
+
+  #onBlur = () => {
+    if (this.#pressRaf !== 0) {
+      cancelAnimationFrame(this.#pressRaf);
+      this.#pressRaf = 0;
+    }
+    if (this.#releaseRaf !== 0) {
+      cancelAnimationFrame(this.#releaseRaf);
+      this.#releaseRaf = 0;
+    }
+    this.removeAttribute("data-pressed");
+  };
 
   connectedCallback() {
     if (!this.shadowRoot) {
@@ -126,6 +193,10 @@ export class RealmorphismButtonElement extends RealmorphismHTMLElementBase {
         angle: this.angle,
       })}`;
       this.#button = shadow.querySelector("button");
+      this.#button?.addEventListener("pointerdown", this.#onPointerDown);
+      this.#button?.addEventListener("pointerup", this.#onPointerUp);
+      this.#button?.addEventListener("pointercancel", this.#onPointerUp);
+      this.#button?.addEventListener("blur", this.#onBlur);
       this.#button?.addEventListener("click", () => {
         this.dispatchEvent(
           new CustomEvent("realmorphism-press", {
@@ -142,6 +213,10 @@ export class RealmorphismButtonElement extends RealmorphismHTMLElementBase {
     }
 
     this.sync();
+  }
+
+  disconnectedCallback() {
+    this.#onBlur();
   }
 
   attributeChangedCallback() {

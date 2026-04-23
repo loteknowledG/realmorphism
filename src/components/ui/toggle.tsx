@@ -9,11 +9,11 @@ const toggleVariants = cva(
     variants: {
       variant: {
         default:
-          "border-border bg-card text-card-foreground shadow-[2px_2px_0_1px_var(--button-wall)] hover:-translate-x-[2px] hover:-translate-y-[2px] hover:shadow-[4px_4px_0_1px_var(--button-wall)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none data-[state=on]:translate-x-[4px] data-[state=on]:translate-y-[4px] data-[state=on]:shadow-none data-[state=on]:bg-primary data-[state=on]:text-primary-foreground",
+          "border-border bg-card text-card-foreground shadow-[2px_2px_0_1px_var(--button-wall)] hover:-translate-x-[2px] hover:-translate-y-[2px] hover:shadow-[4px_4px_0_1px_var(--button-wall)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none data-[state=on]:bg-primary data-[state=on]:text-primary-foreground",
         outline:
-          "border-border bg-background text-foreground shadow-[2px_2px_0_1px_var(--button-wall)] hover:-translate-x-[2px] hover:-translate-y-[2px] hover:shadow-[4px_4px_0_1px_var(--button-wall)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none data-[state=on]:translate-x-[4px] data-[state=on]:translate-y-[4px] data-[state=on]:shadow-none data-[state=on]:bg-accent data-[state=on]:text-accent-foreground",
+          "border-border bg-background text-foreground shadow-[2px_2px_0_1px_var(--button-wall)] hover:-translate-x-[2px] hover:-translate-y-[2px] hover:shadow-[4px_4px_0_1px_var(--button-wall)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none data-[state=on]:bg-primary data-[state=on]:text-primary-foreground",
         secondary:
-          "border-border bg-secondary text-secondary-foreground shadow-[2px_2px_0_1px_var(--button-wall)] hover:-translate-x-[2px] hover:-translate-y-[2px] hover:shadow-[4px_4px_0_1px_var(--button-wall)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none data-[state=on]:translate-x-[4px] data-[state=on]:translate-y-[4px] data-[state=on]:shadow-none data-[state=on]:bg-primary data-[state=on]:text-primary-foreground",
+          "border-border bg-secondary text-secondary-foreground shadow-[2px_2px_0_1px_var(--button-wall)] hover:-translate-x-[2px] hover:-translate-y-[2px] hover:shadow-[4px_4px_0_1px_var(--button-wall)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none data-[state=on]:bg-primary data-[state=on]:text-primary-foreground",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

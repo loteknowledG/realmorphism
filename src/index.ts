@@ -15,6 +15,7 @@ export {
 
 export { Knob } from "./components/ui/knob.tsx";
 export { InfoPane } from "./components/ui/info-pane.tsx";
+export { TuiPanel } from "./components/ui/tui-panel.tsx";
 export { Toggle, toggleVariants } from "./components/ui/toggle.tsx";
 export {
   Tabs,

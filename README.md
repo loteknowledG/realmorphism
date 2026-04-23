@@ -2,6 +2,17 @@
 
 A TypeScript UI library for mechanical, high-contrast controls.
 
+## GitHub Pages (demo)
+
+The Vite demo is built with `GITHUB_PAGES=true` so asset URLs use `/<repository-name>/`.
+
+1. Push this workflow (`.github/workflows/deploy-github-pages.yml`) to GitHub on the default branch (`main` or `master`).
+2. **Repository → Settings → Pages → Build and deployment → Source:** choose **GitHub Actions**.
+3. Open **Actions**, run **Deploy GitHub Pages**, or push to `main` / `master`.
+4. After deploy, the site is at `https://<username>.github.io/<repository-name>/` (the workflow sets `VITE_BASE_PATH` from the repo name).
+
+If the path segment must differ from the repository name, edit `VITE_BASE_PATH` in `.github/workflows/deploy-github-pages.yml` (slashes are normalized in `vite.config.ts`).
+
 ## Development
 
 - Install dependencies:

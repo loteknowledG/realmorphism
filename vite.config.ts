@@ -3,8 +3,13 @@ import tailwindcss from "@tailwindcss/vite";
 import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vite-plus";
 
+const pagesBase =
+  process.env.GITHUB_PAGES === "true"
+    ? `/${(process.env.VITE_BASE_PATH || "realmorphism").replace(/^\/+|\/+$/g, "")}/`
+    : "/";
+
 export default defineConfig({
-  base: process.env.GITHUB_PAGES === "true" ? "/realmorphism/" : "/",
+  base: pagesBase,
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
