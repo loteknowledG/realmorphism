@@ -6,3 +6,6 @@ dist
 
 # Semantic atlas (regenerate: npm run atlas:ingest:isolate from samus-manus)
 .atlas/
+
+# Stakpak session files
+.stakpak/session*

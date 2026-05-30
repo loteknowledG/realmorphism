@@ -17,7 +17,7 @@ This note captures the visual direction we found together:
 - Glassmorphism is a useful warning: when the background warps and the controls disappear, usability drops.
 - Realmorphism is a return to the purpose of controls.
 - It keeps the strengths of the earlier morphisms, but brings the logic back into mechanics.
-- Motion is the language: even an untrained user can understand push, pull, turn, latch, and select.
+- Motion is the language: even an untrained user can understand push, pull, turn, and select.
 - Realmorphism is mostly about components, not layout.
 - Layout should stay simple and serve the controls, not define the whole style.
 - Desktop layout can use 3 columns to use the full screen well.

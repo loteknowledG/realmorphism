@@ -22,6 +22,45 @@ If the answer is unclear, the control should be split into simpler parts.
 
 ## Control Vocabulary
 
+### 0. Raised Panel
+
+Use for:
+
+- static cards and read-only surfaces
+- registry listings, swatches, section frames
+- anything that looks raised but is not an action
+
+Behavior:
+
+- rest pose with bench face and hard wall shadow
+- **no hover lift, no press sink** — motion is reserved for controls
+
+Illustration:
+
+- install command block
+- registry package cards
+- meter readout bezels
+
+### 0b. Sunken Field
+
+Use for:
+
+- text inputs, code blocks, and readouts **on** a raised panel
+- anything typed into or read from the surface
+
+Behavior:
+
+- darker host fill recessed into the panel
+- **inset `box-shadow` on top/left only**: `inset 2px 2px` with `--realmorphism-field-shadow-cast` (68% charcoal `#1a201d` + 32% `--realmorphism-wall`)
+- **top/left border** uses the same cast mix; **no shading on bottom or right edges**
+- **no hover lift** — fields are not buttons; focus may highlight the top/left rim only
+
+Illustration:
+
+- install command `<pre>` blocks
+- unit callback text input
+- log tail viewport
+
 ### 1. Push Button
 
 Use for:
@@ -45,6 +84,12 @@ Illustration:
 - a console action key
 - a tab in a grouped rail
 
+**Tone variants** (class on `realmorphism-control`):
+
+- default — emerald wall (`--realmorphism-wall`)
+- `is-amber` — caution / amber wall
+- `is-critical` — emergency red wall (`--realmorphism-wall-critical`)
+
 ### 2. Sunken Tab
 
 Use for:
@@ -65,7 +110,7 @@ Illustration:
 - section tabs
 - control panel selectors
 
-### 3. Toggle Latch
+### 3. Toggle
 
 Use for:
 
@@ -198,7 +243,7 @@ The first reusable `realmorphism` components should probably be:
 
 - `PushButton`
 - `SunkenTab`
-- `ToggleLatch`
+- `Toggle`
 - `Knob`
 - `RadioRail`
 - `RadarSteering`
