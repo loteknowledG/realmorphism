@@ -261,6 +261,11 @@
   --realmorphism-ink-on-face: #e8efeb;
   --realmorphism-ink-on-face-active: #d6ffec;
   --realmorphism-ink-disabled: #56605c;
+  --realmorphism-ink-glow-press: 0 0 8px rgba(168, 184, 255, 0.55), 0 0 16px rgba(168, 184, 255, 0.28);
+  --realmorphism-ink-glow-selected: 0 0 10px rgba(143, 255, 200, 0.7),
+    0 0 22px rgba(125, 255, 180, 0.38);
+  --realmorphism-ink-glow-caution-press: 0 0 8px rgba(252, 211, 77, 0.6), 0 0 16px rgba(252, 211, 77, 0.3);
+  --realmorphism-ink-glow-critical-press: 0 0 8px rgba(252, 165, 165, 0.65), 0 0 16px rgba(252, 165, 165, 0.32);
   --realmorphism-glyph-hover: #a8b8ff;
   --realmorphism-shadow-rest: 2px 2px 0 1px var(--realmorphism-wall);
   --realmorphism-shadow-hover: 4px 4px 0 1px var(--realmorphism-wall-hover);
@@ -330,7 +335,9 @@
       box-shadow 150ms ease-out,
       color 150ms ease-out,
       background-color 150ms ease-out,
-      border-color 150ms ease-out;
+      border-color 150ms ease-out,
+      text-shadow 150ms ease-out;
+    text-shadow: none;
   }
 
   .theme-realmorphism .realmorphism-action::before,
@@ -350,7 +357,22 @@
     .realmorphism-control:hover:not(:disabled) {
     transform: translate(-2px, -2px);
     box-shadow: var(--realmorphism-shadow-hover);
-    color: var(--realmorphism-glyph-hover);
+  }
+
+  .theme-realmorphism
+    .realmorphism-action:not(.is-amber):not(.is-critical):hover:not(:disabled):not([aria-pressed="true"]):not(
+      [data-state="on"]
+    ):not([data-state="checked"]),
+  .theme-realmorphism
+    .realmorphism-control:not(.is-amber):not(.is-critical):hover:not(:disabled):not([aria-pressed="true"]):not(
+      [data-state="on"]
+    ):not([data-state="checked"]),
+  [data-deck-mode="realmorphism"]
+    [data-morphism="realmorphism"]
+    .realmorphism-control:not(.is-amber):not(.is-critical):hover:not(:disabled):not([aria-pressed="true"]):not(
+      [data-state="on"]
+    ):not([data-state="checked"]) {
+    color: var(--realmorphism-ink-signal);
   }
 
   .theme-realmorphism .realmorphism-action:active:not(:disabled),
@@ -360,6 +382,7 @@
     .realmorphism-control:active:not(:disabled) {
     transform: translate(4px, 4px);
     box-shadow: none;
+    text-shadow: var(--realmorphism-ink-glow-press);
   }
 
   .theme-realmorphism .realmorphism-action[aria-pressed="true"],
@@ -379,6 +402,7 @@
     color: var(--realmorphism-ink-on-face-active);
     transform: translate(2px, 2px);
     box-shadow: var(--realmorphism-shadow-inset-active);
+    text-shadow: var(--realmorphism-ink-glow-selected);
   }
 
   .theme-realmorphism [data-slot="toggle"].realmorphism-control[data-state="on"],
@@ -394,7 +418,7 @@
   .theme-realmorphism [data-slot="toggle"].realmorphism-control[aria-pressed="true"]:hover:not(:disabled) {
     transform: translate(2px, 2px);
     box-shadow: var(--realmorphism-shadow-inset-active);
-    color: var(--realmorphism-ink-on-face-active);
+    color: var(--realmorphism-ink-signal);
   }
 
   /* Pressed / ON stays flat on hover so state reads at a glance. */
@@ -412,7 +436,8 @@
     .realmorphism-control[data-state="checked"]:hover:not(:disabled) {
     transform: translate(2px, 2px);
     box-shadow: var(--realmorphism-shadow-inset-active);
-    color: var(--realmorphism-ink-on-face-active);
+    color: var(--realmorphism-ink-signal);
+    text-shadow: var(--realmorphism-ink-glow-selected);
   }
 
   .theme-realmorphism .realmorphism-action[aria-pressed="true"]:active:not(:disabled),
@@ -429,6 +454,23 @@
     .realmorphism-control[data-state="checked"]:active:not(:disabled) {
     transform: translate(4px, 4px);
     box-shadow: none;
+    text-shadow: var(--realmorphism-ink-glow-press);
+  }
+
+  .theme-realmorphism .realmorphism-action.is-amber:active:not(:disabled),
+  .theme-realmorphism .realmorphism-control.is-amber:active:not(:disabled),
+  [data-deck-mode="realmorphism"]
+    [data-morphism="realmorphism"]
+    .realmorphism-control.is-amber:active:not(:disabled) {
+    text-shadow: var(--realmorphism-ink-glow-caution-press);
+  }
+
+  .theme-realmorphism .realmorphism-action.is-critical:active:not(:disabled),
+  .theme-realmorphism .realmorphism-control.is-critical:active:not(:disabled),
+  [data-deck-mode="realmorphism"]
+    [data-morphism="realmorphism"]
+    .realmorphism-control.is-critical:active:not(:disabled) {
+    text-shadow: var(--realmorphism-ink-glow-critical-press);
   }
 
   .theme-realmorphism [role="switch"][data-state="checked"] > span {

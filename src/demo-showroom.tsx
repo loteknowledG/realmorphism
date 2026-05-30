@@ -69,6 +69,7 @@ export function DemoShowroom() {
   const [balance, setBalance] = React.useState(0);
   const [trim, setTrim] = React.useState(7);
   const [docType, setDocType] = React.useState<DocTypeValue>("markdown");
+  const [toggleSelected, setToggleSelected] = React.useState(true);
   const activeDocLabel = DOC_TYPE_ENTRIES.find((item) => item.value === docType)?.label ?? docType;
   const origin = registryOrigin();
   const commands = installCommands(origin || "https://your-origin.example");
@@ -140,10 +141,18 @@ export function DemoShowroom() {
               </button>
               <button
                 type="button"
-                aria-pressed
+                aria-pressed={toggleSelected}
                 className="realmorphism-control border px-5 py-3 font-mono text-sm"
+                onClick={() => setToggleSelected((pressed) => !pressed)}
               >
-                Selected
+                <span className="inline-grid text-center">
+                  <span className="invisible col-start-1 row-start-1" aria-hidden>
+                    Unselected
+                  </span>
+                  <span className="col-start-1 row-start-1">
+                    {toggleSelected ? "Selected" : "Unselected"}
+                  </span>
+                </span>
               </button>
               <Toggle
                 variant="realmorphism"
