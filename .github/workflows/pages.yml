@@ -37,6 +37,9 @@ jobs:
         run: vp install --frozen-lockfile
 
       - name: Build demo
+        env:
+          GITHUB_PAGES: "true"
+          VITE_BASE_PATH: realmorphism
         run: vp build
 
       - name: Upload Pages artifact

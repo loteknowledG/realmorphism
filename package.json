@@ -2,7 +2,7 @@
   "name": "realmorphism",
   "version": "0.0.0",
   "description": "A starter for creating a TypeScript package.",
-  "homepage": "https://github.com/author/library#readme",
+  "homepage": "https://loteknowledg.github.io/realmorphism/",
   "bugs": {
     "url": "https://github.com/author/library/issues"
   },
@@ -10,7 +10,7 @@
   "author": "Author Name <author.name@mail.com>",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/author/library.git"
+    "url": "git+https://github.com/loteknowledG/realmorphism.git"
   },
   "files": [
     "dist"
