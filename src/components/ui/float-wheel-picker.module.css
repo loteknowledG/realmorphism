@@ -1,0 +1,167 @@
+/* Figlet wheel — fixed slot; neighbors extend outside while spinning (iOS picker) */
+
+.panel {
+  position: relative;
+  background: #000;
+  border-radius: 2px;
+  border: 1px solid #2d2d2d;
+}
+
+.panelTransparent {
+  background: transparent;
+}
+
+.inline {
+  height: var(--float-wheel-row-px);
+  overflow: hidden;
+  box-shadow: none;
+  transition: height 160ms ease-out;
+}
+
+.inlineSpinning {
+  overflow: visible;
+}
+
+.inlineFullWidth {
+  width: 100%;
+  min-width: 0;
+  flex: 1 1 0%;
+  height: 100%;
+  min-height: var(--float-wheel-row-px);
+  overflow: hidden;
+  box-shadow: none;
+}
+
+.inlineFullWidth::after {
+  left: 0;
+  right: 0;
+}
+
+/* Settled expand toolbar — clip to one row (neighbors hidden via opacity). */
+.inlineSettled {
+  overflow: hidden;
+}
+
+.spinningHost {
+  z-index: 50;
+}
+
+/* Taller embla band, centered on the single-row slot */
+.wheelStage {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  overflow: hidden;
+  background: #000;
+  transition:
+    height 160ms ease-out,
+    box-shadow 160ms ease-out;
+}
+
+.wheelStageTransparent {
+  background: transparent;
+}
+
+.wheelStage.spinning {
+  box-shadow: 0 0 16px rgba(0, 0, 0, 0.95);
+}
+
+.wheelStageTransparent.spinning {
+  box-shadow: none;
+}
+
+/* Edge fade on the tall wheel band */
+.wheelStage::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.96) 0%,
+    rgba(0, 0, 0, 0.1) 28%,
+    rgba(0, 0, 0, 0.1) 72%,
+    rgba(0, 0, 0, 0.96) 100%
+  );
+}
+
+.wheelStageTransparent::before {
+  display: none;
+}
+
+/* Selection band — fixed on the toolbar slot (center row) */
+.inline::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(50% - var(--float-wheel-row-px) / 2);
+  height: var(--float-wheel-row-px);
+  z-index: 4;
+  border-top: 1px solid rgba(255, 255, 255, 0.28);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.28);
+  background: transparent;
+}
+
+.viewport {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  touch-action: pan-y;
+  cursor: default;
+}
+
+/* Registry / showroom — compact square wheel (center + one neighbor each side). */
+.showroomPinned {
+  --showroom-wheel-band: calc(var(--float-wheel-row-px) * var(--float-wheel-visible-rows, 3));
+  height: var(--showroom-wheel-band);
+  width: max(var(--showroom-wheel-band), 9.75rem);
+  max-width: 10.5rem;
+  overflow: hidden;
+}
+
+.showroomPinned .wheelStage {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: var(--showroom-wheel-band);
+  overflow: hidden;
+}
+
+.showroomPinned .wheelStage::before {
+  z-index: 1;
+  background: linear-gradient(
+    to bottom,
+    rgba(6, 7, 8, 0.42) 0%,
+    rgba(6, 7, 8, 0) 38%,
+    rgba(6, 7, 8, 0) 62%,
+    rgba(6, 7, 8, 0.42) 100%
+  );
+}
+
+.showroomPinned .viewport {
+  z-index: 2;
+  overflow: visible;
+}
+
+.showroomPinned::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(50% - var(--float-wheel-row-px) / 2);
+  height: var(--float-wheel-row-px);
+  z-index: 4;
+  border-top: 1px solid rgba(255, 255, 255, 0.28);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.28);
+  background: transparent;
+}

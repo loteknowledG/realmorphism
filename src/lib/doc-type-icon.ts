@@ -28,8 +28,24 @@ export function docTypeIconFile(kind: string): string {
   return DOC_TYPE_ICONS[kind] ?? "default_file.svg";
 }
 
+function normalizePublicBase(base: string): string {
+  return base.endsWith("/") ? base : `${base}/`;
+}
+
+/** Vite demo uses BASE_URL; Next.js (Echo Mirage) serves from site root. */
+function resolvePublicAssetBase(): string {
+  try {
+    const env = (import.meta as ImportMeta & { env?: { BASE_URL?: string } }).env;
+    const base = env?.BASE_URL;
+    if (typeof base === "string" && base.length > 0) {
+      return normalizePublicBase(base);
+    }
+  } catch {
+    // Non-Vite bundlers may not define import.meta.env.
+  }
+  return "/";
+}
+
 export function docTypeIconSrc(kind: string): string {
-  const base = import.meta.env.BASE_URL ?? "/";
-  const normalizedBase = base.endsWith("/") ? base : `${base}/`;
-  return `${normalizedBase}vendor/vscode-icons/${docTypeIconFile(kind)}`;
+  return `${resolvePublicAssetBase()}vendor/vscode-icons/${docTypeIconFile(kind)}`;
 }

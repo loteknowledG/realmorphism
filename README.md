@@ -50,24 +50,32 @@ The demo uses shadcn/ui source components under `src/components/ui/` and shared 
 
 ## Library API
 
-Import the shared components directly from `realmorphism`:
+Install pickers and kit as a package:
+
+```bash
+pnpm add realmorphism
+```
+
+Monorepo (Echo Mirage):
+
+```bash
+pnpm add realmorphism@file:../realmorphism
+```
+
+Or install copy-in blocks from the shadcn registry (theme → base → rolling pickers → kit). Run `pnpm registry:build` in this repo after changing picker source.
+
+Import components:
 
 ```ts
 import {
+  KitShowroom,
+  TextRollingPicker,
+  DocTypeRollingPicker,
+  ShowroomFontPicker,
+  RollingPicker,
   Button,
   Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-  InfoPane,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-  Toggle,
-  defineRealmorphismButton,
+  // ...
 } from "realmorphism";
 ```
 
