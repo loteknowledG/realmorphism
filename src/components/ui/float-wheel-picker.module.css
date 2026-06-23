@@ -117,6 +117,15 @@
   cursor: default;
 }
 
+.showroomPinned .viewport {
+  cursor: grab;
+  user-select: none;
+}
+
+.showroomPinned .viewport:active {
+  cursor: grabbing;
+}
+
 /* Registry / showroom — compact square wheel (center + one neighbor each side). */
 .showroomPinned {
   --showroom-wheel-band: calc(var(--float-wheel-row-px) * var(--float-wheel-visible-rows, 3));

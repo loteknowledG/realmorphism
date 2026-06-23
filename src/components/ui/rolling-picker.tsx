@@ -29,6 +29,12 @@ const EXPAND_WHEEL_MOMENTUM_GAIN = 1.12;
 const EXPAND_WHEEL_MOMENTUM_FRICTION = 0.93;
 const EXPAND_WHEEL_MOMENTUM_DURATION = 62;
 const EXPAND_DRAG_FLICK_VELOCITY_SCALE = 16;
+/** Pinned Price-Is-Right wheels — long free drag + strong release flick. */
+const PINNED_WHEEL_MOMENTUM_GAIN = 1.92;
+const PINNED_WHEEL_MOMENTUM_FRICTION = 0.972;
+const PINNED_WHEEL_MOMENTUM_DURATION = 155;
+const PINNED_DRAG_FLICK_VELOCITY_SCALE = 58;
+const PINNED_DRAG_THRESHOLD_PX = 1;
 /** Compact icon rollers (operator doc type, engine, export). */
 const COMPACT_WHEEL_MOMENTUM_GAIN = 0.98;
 const COMPACT_WHEEL_MOMENTUM_FRICTION = 0.9;
@@ -88,18 +94,34 @@ export function RollingPicker({
     inlinePanelFullWidth || viewportClassName.includes("max-w-none");
   const useWheelMomentum = wheelMomentum ?? true;
   const useExpandMomentum = wheelExpandOnScroll || wheelPinnedOpen;
+  const usePinnedMomentum = wheelPinnedOpen;
+  const dragFreeEnabled = !loopEnabled || wheelPinnedOpen;
   const resolvedMomentumGain =
     wheelMomentumGain ??
-    (useExpandMomentum ? EXPAND_WHEEL_MOMENTUM_GAIN : COMPACT_WHEEL_MOMENTUM_GAIN);
+    (usePinnedMomentum
+      ? PINNED_WHEEL_MOMENTUM_GAIN
+      : useExpandMomentum
+        ? EXPAND_WHEEL_MOMENTUM_GAIN
+        : COMPACT_WHEEL_MOMENTUM_GAIN);
   const resolvedMomentumFriction =
     wheelMomentumFriction ??
-    (useExpandMomentum ? EXPAND_WHEEL_MOMENTUM_FRICTION : COMPACT_WHEEL_MOMENTUM_FRICTION);
+    (usePinnedMomentum
+      ? PINNED_WHEEL_MOMENTUM_FRICTION
+      : useExpandMomentum
+        ? EXPAND_WHEEL_MOMENTUM_FRICTION
+        : COMPACT_WHEEL_MOMENTUM_FRICTION);
   const resolvedMomentumDuration =
     wheelMomentumDuration ??
-    (useExpandMomentum ? EXPAND_WHEEL_MOMENTUM_DURATION : COMPACT_WHEEL_MOMENTUM_DURATION);
-  const resolvedDragFlickScale = useExpandMomentum
-    ? EXPAND_DRAG_FLICK_VELOCITY_SCALE
-    : COMPACT_DRAG_FLICK_VELOCITY_SCALE;
+    (usePinnedMomentum
+      ? PINNED_WHEEL_MOMENTUM_DURATION
+      : useExpandMomentum
+        ? EXPAND_WHEEL_MOMENTUM_DURATION
+        : COMPACT_WHEEL_MOMENTUM_DURATION);
+  const resolvedDragFlickScale = usePinnedMomentum
+    ? PINNED_DRAG_FLICK_VELOCITY_SCALE
+    : useExpandMomentum
+      ? EXPAND_DRAG_FLICK_VELOCITY_SCALE
+      : COMPACT_DRAG_FLICK_VELOCITY_SCALE;
   const valueRef = useRef(value);
   valueRef.current = value;
 
@@ -297,7 +319,8 @@ export function RollingPicker({
     if (!useWheelMomentumRef.current) return;
     const engine = embla.internalEngine();
     const velocity = engine.scrollBody.velocity();
-    if (Math.abs(velocity) < 0.04) return;
+    const minVelocity = wheelPinnedOpenRef.current ? 0.008 : 0.04;
+    if (Math.abs(velocity) < minVelocity) return;
     engine.scrollBody
       .useFriction(momentumFrictionRef.current)
       .useDuration(momentumDurationRef.current);
@@ -310,9 +333,11 @@ export function RollingPicker({
       loop: emblaLoopEngine,
       align: emblaAlign,
       containScroll: (emblaLoopEngine || loopEnabled ? false : "trimSnaps") as false | "trimSnaps",
-      dragFree: !loopEnabled,
+      dragFree: dragFreeEnabled,
+      skipSnaps: dragFreeEnabled,
+      dragThreshold: wheelPinnedOpen ? PINNED_DRAG_THRESHOLD_PX : 10,
     }),
-    [emblaAlign, loopEnabled, emblaLoopEngine],
+    [emblaAlign, loopEnabled, emblaLoopEngine, dragFreeEnabled, wheelPinnedOpen],
   );
 
   const reInitWheel = useCallback(
@@ -330,9 +355,11 @@ export function RollingPicker({
     loop: emblaLoopEngine,
     align: emblaAlign,
     containScroll: emblaLoopEngine || loopEnabled ? (false as const) : ("trimSnaps" as const),
-    dragFree: !loopEnabled,
+    dragFree: dragFreeEnabled,
+    skipSnaps: dragFreeEnabled,
+    dragThreshold: wheelPinnedOpen ? PINNED_DRAG_THRESHOLD_PX : 10,
     watchDrag: true,
-    duration: wheelExpandOnScroll ? 28 : 22,
+    duration: wheelPinnedOpen ? 52 : wheelExpandOnScroll ? 28 : 22,
   });
 
   useEffect(() => {
@@ -341,7 +368,9 @@ export function RollingPicker({
   }, [emblaApi, reInitWheel, items.length]);
 
   const resolvedSnapIndex = useCallback((embla: EmblaCarouselType) => {
-    if (loopEnabledRef.current) return embla.selectedScrollSnap();
+    if (loopEnabledRef.current && !wheelPinnedOpenRef.current) {
+      return embla.selectedScrollSnap();
+    }
     return findClosestSnapIndex(embla);
   }, []);
 
@@ -416,7 +445,7 @@ export function RollingPicker({
 
   const tryLoopDragWrap = useCallback(
     (embla: EmblaCarouselType): boolean => {
-      if (!loopEnabledRef.current) return false;
+      if (!loopEnabledRef.current || wheelPinnedOpenRef.current) return false;
       const count = itemsRef.current.length;
       if (count <= 1) return false;
 
@@ -516,6 +545,11 @@ export function RollingPicker({
       if (isProgrammaticScrollRef.current) return;
       const engine = emblaApi.internalEngine();
       if (!engine.scrollBody.settled()) return;
+      // Pinned showroom: intermediate snap settles during coast must not
+      // commit onChange (figlet catalog re-render kills momentum feel).
+      if (wheelPinnedOpenRef.current && (userDraggedRef.current || userWheelPendingRef.current)) {
+        return;
+      }
       commitSelection(emblaApi);
     };
 
@@ -538,7 +572,7 @@ export function RollingPicker({
     };
 
     const onNativePointerUp = (event: PointerEvent) => {
-      if (!loopEnabledRef.current) {
+      if (!loopEnabledRef.current || wheelPinnedOpenRef.current) {
         if (useWheelMomentumRef.current) {
           requestAnimationFrame(() => boostDragFlick(emblaApi));
         }
@@ -589,7 +623,7 @@ export function RollingPicker({
       interactionDirectionRef.current = direction;
       const steps = wheelStepsFromDelta(event.deltaY, wheelScrollStepRef.current);
 
-      if (loopEnabledRef.current) {
+      if (loopEnabledRef.current && !wheelPinnedOpenRef.current) {
         const count = itemsRef.current.length;
         const currentIndex = emblaApi.selectedScrollSnap();
         const nextIndex = normalizeIndex(currentIndex + direction * steps, count);
@@ -656,7 +690,7 @@ export function RollingPicker({
 
       if (!momentumSpin) {
         commitSelection(emblaApi);
-        if (dragged && loopEnabledRef.current) {
+        if (dragged && loopEnabledRef.current && !wheelPinnedOpenRef.current) {
           tryLoopDragWrap(emblaApi);
         }
       }
@@ -696,7 +730,7 @@ export function RollingPicker({
           wheelNotifyDebounceRef.current = null;
           if (!userDraggedRef.current && !userWheelPendingRef.current) return;
           if (!emblaApi.internalEngine().scrollBody.settled()) return;
-          if (loopEnabledRef.current && tryLoopDragWrap(emblaApi)) return;
+          if (loopEnabledRef.current && !wheelPinnedOpenRef.current && tryLoopDragWrap(emblaApi)) return;
           commitSelection(emblaApi);
           showSnapHintLabel(emblaApi);
         }, momentumDurationRef.current + 72);
@@ -706,13 +740,14 @@ export function RollingPicker({
       if (useWheelMomentumRef.current && wheelExpandOnScroll) {
         showNeighborPreviews(emblaApi, "scroll");
       }
-      if (useWheelMomentumRef.current && !loopEnabledRef.current) {
+      if (useWheelMomentumRef.current && (!loopEnabledRef.current || wheelPinnedOpenRef.current)) {
         ensureSnappedToCenter(emblaApi);
       }
     };
 
     const onPointerUp = () => {
-      if (!useWheelMomentumRef.current || loopEnabledRef.current) return;
+      if (!useWheelMomentumRef.current) return;
+      if (loopEnabledRef.current && !wheelPinnedOpenRef.current) return;
       requestAnimationFrame(() => boostDragFlick(emblaApi));
     };
 
