@@ -30,10 +30,10 @@ const EXPAND_WHEEL_MOMENTUM_FRICTION = 0.93;
 const EXPAND_WHEEL_MOMENTUM_DURATION = 62;
 const EXPAND_DRAG_FLICK_VELOCITY_SCALE = 16;
 /** Pinned Price-Is-Right wheels — long free drag + strong release flick. */
-const PINNED_WHEEL_MOMENTUM_GAIN = 1.92;
-const PINNED_WHEEL_MOMENTUM_FRICTION = 0.972;
-const PINNED_WHEEL_MOMENTUM_DURATION = 155;
-const PINNED_DRAG_FLICK_VELOCITY_SCALE = 58;
+const PINNED_WHEEL_MOMENTUM_GAIN = 2.15;
+const PINNED_WHEEL_MOMENTUM_FRICTION = 0.978;
+const PINNED_WHEEL_MOMENTUM_DURATION = 180;
+const PINNED_DRAG_FLICK_VELOCITY_SCALE = 72;
 const PINNED_DRAG_THRESHOLD_PX = 1;
 /** Compact icon rollers (operator doc type, engine, export). */
 const COMPACT_WHEEL_MOMENTUM_GAIN = 0.98;
@@ -397,10 +397,12 @@ export function RollingPicker({
     const entry = list[normalizeIndex(index, list.length)];
     if (!entry) return;
     const userActed = userDraggedRef.current || userWheelPendingRef.current;
+    setCenterIndex(normalizeIndex(index, list.length));
+    // Pinned showroom: never write controlled value while the user is spinning.
+    if (wheelPinnedOpenRef.current && userActed) return;
     if (entry.value !== valueRef.current) {
       onChangeRef.current(entry.value);
     }
-    setCenterIndex(normalizeIndex(index, list.length));
     if (!userActed) return;
     onUserSelectRef.current?.(entry.value);
     userDraggedRef.current = false;
@@ -689,9 +691,13 @@ export function RollingPicker({
       const momentumSpin = dragged && useWheelMomentumRef.current;
 
       if (!momentumSpin) {
-        commitSelection(emblaApi);
-        if (dragged && loopEnabledRef.current && !wheelPinnedOpenRef.current) {
-          tryLoopDragWrap(emblaApi);
+        if (wheelPinnedOpenRef.current) {
+          maybeNotifyUserSettled(emblaApi);
+        } else {
+          commitSelection(emblaApi);
+          if (dragged && loopEnabledRef.current) {
+            tryLoopDragWrap(emblaApi);
+          }
         }
       }
 
@@ -731,16 +737,26 @@ export function RollingPicker({
           if (!userDraggedRef.current && !userWheelPendingRef.current) return;
           if (!emblaApi.internalEngine().scrollBody.settled()) return;
           if (loopEnabledRef.current && !wheelPinnedOpenRef.current && tryLoopDragWrap(emblaApi)) return;
-          commitSelection(emblaApi);
+          if (wheelPinnedOpenRef.current) {
+            notifyUserSettled(emblaApi);
+          } else {
+            commitSelection(emblaApi);
+          }
           showSnapHintLabel(emblaApi);
-        }, momentumDurationRef.current + 72);
+        }, wheelPinnedOpenRef.current
+          ? momentumDurationRef.current + 200
+          : momentumDurationRef.current + 72);
       }
       if (engine.dragHandler.pointerDown()) return;
       if (!engine.scrollBody.settled()) return;
       if (useWheelMomentumRef.current && wheelExpandOnScroll) {
         showNeighborPreviews(emblaApi, "scroll");
       }
-      if (useWheelMomentumRef.current && (!loopEnabledRef.current || wheelPinnedOpenRef.current)) {
+      if (
+        useWheelMomentumRef.current &&
+        !loopEnabledRef.current &&
+        !wheelPinnedOpenRef.current
+      ) {
         ensureSnappedToCenter(emblaApi);
       }
     };
@@ -821,7 +837,16 @@ export function RollingPicker({
 
   useEffect(() => {
     if (!emblaApi || !wheelExpandOnScroll || items.length === 0) return;
-    if (neighborsVisibleRef.current && !wheelPinnedOpen) return;
+    if (!wheelPinnedOpen) {
+      if (neighborsVisibleRef.current) return;
+    } else if (
+      neighborsVisibleRef.current ||
+      userDraggedRef.current ||
+      userWheelPendingRef.current ||
+      !emblaApi.internalEngine().scrollBody.settled()
+    ) {
+      return;
+    }
     const index = indexForValue(items, value);
     if (findClosestSnapIndex(emblaApi) === index) return;
     isProgrammaticScrollRef.current = true;
