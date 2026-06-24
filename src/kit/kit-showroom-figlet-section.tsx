@@ -51,19 +51,17 @@ export function KitShowroomFigletSection({
 
       <div className="flex min-w-0 flex-col gap-6 xl:flex-row xl:items-start">
         <div className="flex w-full min-w-0 shrink-0 flex-col items-center gap-3 xl:w-auto">
-          <div className="realmorphism-kit-toolbar flex w-fit max-w-full min-h-[8.25rem] flex-col items-center gap-2 px-3 py-2.5">
-            <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-[#6f7a75]">
-              Wheel
-            </span>
-            <div data-kit-showroom-wheel className="flex justify-center">
-              <ShowroomFontPicker
-                variant="showroom"
-                value={font}
-                onChange={setFont}
-                fonts={fonts}
-                renderWheelPreview={renderWheelPreview}
-              />
-            </div>
+          <div
+            data-kit-showroom-wheel
+            className="realmorphism-kit-toolbar flex w-fit max-w-full justify-center"
+          >
+            <ShowroomFontPicker
+              variant="showroom"
+              value={font}
+              onChange={setFont}
+              fonts={fonts}
+              renderWheelPreview={renderWheelPreview}
+            />
           </div>
 
           <div className="realmorphism-panel w-full max-w-[10.5rem] space-y-1 p-3">

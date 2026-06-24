@@ -38,20 +38,29 @@ export function applyPinnedShowroomSlideStyles(
   centerIndex: number,
   options?: Pick<IosPickerStyleOptions, "maxNeighborSteps" | "centerEmphasis">,
 ): void {
-  const snapCount = emblaApi.scrollSnapList().length;
-  if (!snapCount) return;
+  const slides = emblaApi.slideNodes();
+  if (!slides.length) return;
 
-  const loop = emblaApi.internalEngine().options.loop;
+  const engine = emblaApi.internalEngine();
+  const loop = engine.options.loop;
+  const centerSlideIndex = engine.slideRegistry[centerIndex]?.[0] ?? centerIndex;
+  const normalizedCenterIndex =
+    ((centerSlideIndex % slides.length) + slides.length) % slides.length;
   const maxNeighborSteps = options?.maxNeighborSteps ?? 1;
   const centerEmphasis = options?.centerEmphasis ?? false;
   const minOpacity = centerEmphasis ? 0.28 : 0.35;
   const opacityFalloff = centerEmphasis ? 0.4 : 0.22;
 
-  emblaApi.slideNodes().forEach((_node, index) => {
+  slides.forEach((_node, index) => {
     const node = pickerInnerNode(emblaApi, index);
     if (!node) return;
 
-    const stepsFromCenter = indexDistanceFromSnapCenter(index, centerIndex, snapCount, loop);
+    const stepsFromCenter = indexDistanceFromSnapCenter(
+      index,
+      normalizedCenterIndex,
+      slides.length,
+      loop,
+    );
     if (stepsFromCenter > maxNeighborSteps + 0.01) {
       node.style.opacity = "0";
       node.style.transform = "scale(0.82)";

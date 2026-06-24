@@ -29,13 +29,13 @@ const EXPAND_WHEEL_MOMENTUM_GAIN = 1.12;
 const EXPAND_WHEEL_MOMENTUM_FRICTION = 0.93;
 const EXPAND_WHEEL_MOMENTUM_DURATION = 62;
 const EXPAND_DRAG_FLICK_VELOCITY_SCALE = 16;
-/** Pinned Price-Is-Right wheels — coast then dead-stop (no spring bounce). */
-const PINNED_WHEEL_MOMENTUM_GAIN = 1.42;
-const PINNED_WHEEL_MOMENTUM_FRICTION = 0.84;
-const PINNED_WHEEL_MOMENTUM_DURATION = 38;
-const PINNED_DRAG_FLICK_VELOCITY_SCALE = 26;
+/** Pinned Price-Is-Right wheels — long smooth coast, monotonic deceleration, gentle slow-to-stop. */
+const PINNED_WHEEL_MOMENTUM_GAIN = 1.28;
+const PINNED_WHEEL_MOMENTUM_FRICTION = 0.965;
+const PINNED_WHEEL_MOMENTUM_DURATION = 22;
+const PINNED_DRAG_FLICK_VELOCITY_SCALE = 22;
 const PINNED_DRAG_FLICK_MAX_SLIDES = 36;
-const PINNED_SNAP_DURATION = 16;
+const PINNED_SNAP_DURATION = 320;
 const PINNED_DRAG_THRESHOLD_PX = 1;
 /** Compact icon rollers (operator doc type, engine, export). */
 const COMPACT_WHEEL_MOMENTUM_GAIN = 0.98;
@@ -401,7 +401,7 @@ export function RollingPicker({
     interactionDirectionRef.current = 0;
   }, [resolvedSnapIndex]);
 
-  /** Pinned showroom — lock nearest snap with no spring overshoot. */
+  /** Pinned showroom — lock nearest snap with a slow gentle settle. */
   const finalizePinnedShowroomSpin = useCallback(
     (embla: EmblaCarouselType) => {
       const list = itemsRef.current;
@@ -410,10 +410,19 @@ export function RollingPicker({
       const entry = list[normalizeIndex(closest, list.length)];
       if (!entry) return;
 
-      isProgrammaticScrollRef.current = true;
-      embla.internalEngine().scrollBody.useDuration(PINNED_SNAP_DURATION);
-      embla.scrollTo(closest, true);
-      endProgrammaticScroll(embla);
+      const offset = snapOffsetPx(embla, closest);
+      if (offset > SNAP_ALIGN_THRESHOLD_PX) {
+        isProgrammaticScrollRef.current = true;
+        embla.internalEngine().scrollBody.useDuration(PINNED_SNAP_DURATION);
+        embla.scrollTo(closest, true);
+        const onSnapDone = () => {
+          endProgrammaticScroll(embla);
+          embla.off("settle", onSnapDone);
+        };
+        embla.on("settle", onSnapDone);
+      } else {
+        endProgrammaticScroll(embla);
+      }
 
       if (entry.value !== valueRef.current) {
         onChangeRef.current(entry.value);
@@ -552,6 +561,9 @@ export function RollingPicker({
     const closest = findClosestSnapIndex(embla);
     if (snapOffsetPx(embla, closest) > SNAP_ALIGN_THRESHOLD_PX) {
       isProgrammaticScrollRef.current = true;
+      if (wheelPinnedOpenRef.current) {
+        embla.internalEngine().scrollBody.useDuration(PINNED_SNAP_DURATION);
+      }
       embla.scrollTo(closest);
       return true;
     }
@@ -765,7 +777,7 @@ export function RollingPicker({
     const onSettle = () => {
       endProgrammaticScroll(emblaApi);
 
-      if (!wheelExpandOnScrollRef.current) {
+      if (!wheelExpandOnScrollRef.current || wheelPinnedOpenRef.current) {
         const stillCentering = ensureSnappedToCenter(emblaApi);
         if (stillCentering) return;
       }
