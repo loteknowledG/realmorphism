@@ -97,7 +97,8 @@ export function RollingPicker({
   const useWheelMomentum = wheelMomentum ?? true;
   const useExpandMomentum = wheelExpandOnScroll || wheelPinnedOpen;
   const usePinnedMomentum = wheelPinnedOpen;
-  const dragFreeEnabled = !loopEnabled || wheelPinnedOpen;
+  /** Pinned Price-Is-Right wheels must land on a discrete snap, not between rows. */
+  const dragFreeEnabled = wheelPinnedOpen ? false : !loopEnabled;
   const resolvedMomentumGain =
     wheelMomentumGain ??
     (usePinnedMomentum
@@ -385,6 +386,24 @@ export function RollingPicker({
     return findClosestSnapIndex(embla);
   }, []);
 
+  const pinnedSnapThresholdPx = (): number => {
+    if (!wheelPinnedOpenRef.current) return SNAP_ALIGN_THRESHOLD_PX;
+    return Math.max(SNAP_ALIGN_THRESHOLD_PX, slideHeightPxRef.current * 0.12);
+  };
+
+  const ensureSnappedToCenter = useCallback((embla: EmblaCarouselType): boolean => {
+    const closest = findClosestSnapIndex(embla);
+    if (snapOffsetPx(embla, closest) > pinnedSnapThresholdPx()) {
+      isProgrammaticScrollRef.current = true;
+      if (wheelPinnedOpenRef.current) {
+        embla.internalEngine().scrollBody.useDuration(PINNED_SNAP_DURATION);
+      }
+      embla.scrollTo(closest, true);
+      return true;
+    }
+    return false;
+  }, []);
+
   const notifyUserSettled = useCallback((embla: EmblaCarouselType) => {
     const list = itemsRef.current;
     if (list.length === 0) return;
@@ -411,7 +430,7 @@ export function RollingPicker({
       if (!entry) return;
 
       const offset = snapOffsetPx(embla, closest);
-      if (offset > SNAP_ALIGN_THRESHOLD_PX) {
+      if (offset > pinnedSnapThresholdPx()) {
         isProgrammaticScrollRef.current = true;
         embla.internalEngine().scrollBody.useDuration(PINNED_SNAP_DURATION);
         embla.scrollTo(closest, true);
@@ -556,19 +575,6 @@ export function RollingPicker({
     },
     [endProgrammaticScroll, showNeighborPreviews],
   );
-
-  const ensureSnappedToCenter = useCallback((embla: EmblaCarouselType): boolean => {
-    const closest = findClosestSnapIndex(embla);
-    if (snapOffsetPx(embla, closest) > SNAP_ALIGN_THRESHOLD_PX) {
-      isProgrammaticScrollRef.current = true;
-      if (wheelPinnedOpenRef.current) {
-        embla.internalEngine().scrollBody.useDuration(PINNED_SNAP_DURATION);
-      }
-      embla.scrollTo(closest);
-      return true;
-    }
-    return false;
-  }, []);
 
   useEffect(() => {
     return () => {
@@ -777,20 +783,30 @@ export function RollingPicker({
     const onSettle = () => {
       endProgrammaticScroll(emblaApi);
 
-      if (!wheelExpandOnScrollRef.current || wheelPinnedOpenRef.current) {
-        const stillCentering = ensureSnappedToCenter(emblaApi);
-        if (stillCentering) return;
-      }
-
       const dragged = userDraggedRef.current || userWheelPendingRef.current;
       const momentumSpin = dragged && useWheelMomentumRef.current;
 
-      if (!momentumSpin && wheelPinnedOpenRef.current) {
-        finalizePinnedShowroomSpin(emblaApi);
-      } else if (!momentumSpin) {
-        commitSelection(emblaApi);
-        if (dragged && loopEnabledRef.current) {
-          tryLoopDragWrap(emblaApi);
+      if (wheelPinnedOpenRef.current) {
+        const stillCentering = ensureSnappedToCenter(emblaApi);
+        if (stillCentering) return;
+        const engine = emblaApi.internalEngine();
+        const coasting =
+          momentumSpin &&
+          (Math.abs(engine.scrollBody.velocity()) >= 0.02 || !engine.scrollBody.settled());
+        if (!coasting) {
+          finalizePinnedShowroomSpin(emblaApi);
+        }
+      } else {
+        if (!wheelExpandOnScrollRef.current) {
+          const stillCentering = ensureSnappedToCenter(emblaApi);
+          if (stillCentering) return;
+        }
+
+        if (!momentumSpin) {
+          commitSelection(emblaApi);
+          if (dragged && loopEnabledRef.current) {
+            tryLoopDragWrap(emblaApi);
+          }
         }
       }
 
@@ -842,6 +858,7 @@ export function RollingPicker({
           if (!emblaApi.internalEngine().scrollBody.settled()) return;
           if (loopEnabledRef.current && !wheelPinnedOpenRef.current && tryLoopDragWrap(emblaApi)) return;
           if (wheelPinnedOpenRef.current) {
+            if (ensureSnappedToCenter(emblaApi)) return;
             finalizePinnedShowroomSpin(emblaApi);
           } else {
             commitSelection(emblaApi);
